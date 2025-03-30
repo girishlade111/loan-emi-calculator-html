@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan EMI Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    body {
+      background-color: #F5F7FA;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: linear-gradient(to right, #2A6BFF, #4A90E2);
+      color: white;
+      padding: 30px;
+      border-radius: 10px 10px 0 0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    .flex-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 25px;
+      flex: 1 1 300px;
+    }
+
+    .blue-card {
+      background: #2A6BFF;
+      color: white;
+    }
+
+    .input-group {
+      margin-bottom: 25px;
+    }
+
+    .input-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .input-label label {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .info-icon {
+      position: relative;
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      background: #e0e0e0;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 18px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .info-icon:hover .tooltip {
+      display: block;
+    }
+
+    .tooltip {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 25px;
+      width: 200px;
+      background: #333;
+      color: white;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      z-index: 100;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin: 10px 0;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      background: #ddd;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #2A6BFF;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .range-marks {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #777;
+    }
+
+    .emi-details {
+      margin-bottom: 30px;
+    }
+
+    .emi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .toggle-view {
+      display: flex;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 3px;
+    }
+
+    .toggle-btn {
+      padding: 8px 15px;
+      border-radius: 20px;
+      border: none;
+      background: transparent;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .toggle-btn.active {
+      background: white;
+      color: #2A6BFF;
+    }
+
+    .emi-amount {
+      margin-bottom: 20px;
+    }
+
+    .emi-amount .label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .emi-amount .value {
+      font-size: 2.2rem;
+      font-weight: bold;
+    }
+
+    .emi-amount .period {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-left: 5px;
+    }
+
+    .emi-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .summary-item .label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .summary-item .value {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .interest-value {
+      color: #FF6B6B;
+    }
+
+    .chart-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .chart-wrapper {
+      flex: 1 1 45%;
+      min-height: 250px;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 10px 15px;
+      border-radius: 5px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .btn-blue {
+      background: #2A6BFF;
+      color: white;
+    }
+
+    .btn-blue:hover {
+      background: #1a5ad9;
+    }
+
+    .btn-green {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .btn-green:hover {
+      background: #3d8b40;
+    }
+
+    .btn-gray {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn-gray:hover {
+      background: #d0d0d0;
+    }
+
+    .disclaimer {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #777;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .flex-container {
+        flex-direction: column;
+      }
+      
+      .chart-container {
+        flex-direction: column;
+      }
+      
+      .chart-wrapper {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header Section -->
+    <div class="header">
+      <h1>Loan EMI Calculator</h1>
+      <p>Calculate your monthly installments effortlessly</p>
+    </div>
+
+    <div class="flex-container">
+      <!-- Input Section -->
+      <div class="card">
+        <div class="input-group">
+          <div class="input-label">
+            <label>Loan Amount (₹)</label>
+            <div class="info-icon">i
+              <div class="tooltip">The total amount you wish to borrow</div>
+            </div>
+          </div>
+          <input type="number" id="loan-amount" value="1000000" min="10000" max="5000000" step="10000">
+          <input type="range" id="loan-amount-slider" min="10000" max="5000000" step="10000" value="1000000">
+          <div class="range-marks">
+            <span>₹10,000</span>
+            <span>₹50,00,000</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <div class="input-label">
+            <label>Annual Interest Rate (%)</label>
+            <div class="info-icon">i
+              <div class="tooltip">The annual interest rate on your loan</div>
+            </div>
+          </div>
+          <input type="number" id="interest-rate" value="8" min="1" max="20" step="0.1">
+          <input type="range" id="interest-rate-slider" min="1" max="20" step="0.1" value="8">
+          <div class="range-marks">
+            <span>1%</span>
+            <span>20%</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <div class="input-label">
+            <label>Loan Tenure (Years)</label>
+            <div class="info-icon">i
+              <div class="tooltip">The duration of your loan in years</div>
+            </div>
+          </div>
+          <input type="number" id="loan-tenure" value="10" min="1" max="30">
+          <input type="range" id="loan-tenure-slider" min="1" max="30" step="1" value="10">
+          <div class="range-marks">
+            <span>1 Year</span>
+            <span>30 Years</span>
+          </div>
+        </div>
+
+        <button id="reset-btn" class="btn btn-gray" style="width: 100%;">Reset All</button>
+      </div>
+
+      <!-- Results Section -->
+      <div class="card blue-card">
+        <div class="emi-details">
+          <div class="emi-header">
+            <h2>EMI Details</h2>
+            <div class="toggle-view">
+              <button id="monthly-btn" class="toggle-btn active">Monthly</button>
+              <button id="yearly-btn" class="toggle-btn">Yearly</button>
+            </div>
+          </div>
+
+          <div class="emi-amount">
+            <div class="label">EMI Amount</div>
+            <span class="value" id="emi-value">₹12,133</span>
+            <span class="period" id="emi-period">per month</span>
+          </div>
+
+          <div class="emi-summary">
+            <div class="summary-item">
+              <div class="label">Total Amount</div>
+              <div class="value" id="total-payment">₹14,55,960</div>
+            </div>
+            <div class="summary-item">
+              <div class="label">Total Interest</div>
+              <div class="value interest-value" id="total-interest">₹4,55,960</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="card" style="margin-top: 20px;">
+      <h2 style="margin-bottom: 20px;">Payment Breakdown</h2>
+      
+      <div class="chart-container">
+        <div class="chart-wrapper">
+          <canvas id="pieChart"></canvas>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="lineChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="button-group">
+        <button id="download-btn" class="btn btn-blue">Download PDF</button>
+        <button id="share-btn" class="btn btn-green">Share Results</button>
+      </div>
+    </div>
+
+    <p class="disclaimer">Results are approximate. Consult your bank for exact figures.</p>
+  </div>
+
+  <script>
+    // DOM Elements
+    const loanAmountInput = document.getElementById('loan-amount');
+    const loanAmountSlider = document.getElementById('loan-amount-slider');
+    const interestRateInput = document.getElementById('interest-rate');
+    const interestRateSlider = document.getElementById('interest-rate-slider');
+    const loanTenureInput = document.getElementById('loan-tenure');
+    const loanTenureSlider = document.getElementById('loan-tenure-slider');
+    const emiValue = document.getElementById('emi-value');
+    const emiPeriod = document.getElementById('emi-period');
+    const totalPayment = document.getElementById('total-payment');
+    const totalInterest = document.getElementById('total-interest');
+    const monthlyBtn = document.getElementById('monthly-btn');
+    const yearlyBtn = document.getElementById('yearly-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const downloadBtn = document.getElementById('download-btn');
+    const shareBtn = document.getElementById('share-btn');
+
+    // State variables
+    let loanAmount = 1000000;
+    let interestRate = 8;
+    let loanTenure = 10;
+    let monthlyEMI = 0;
+    let totalAmount = 0;
+    let totalInterestAmount = 0;
+    let isMonthlyView = true;
+    let pieChartInstance = null;
+    let lineChartInstance = null;
+
+    // Initialize charts
+    function initCharts() {
+      // Pie Chart
+      const pieCtx = document.getElementById('pieChart').getContext('2d');
+      pieChartInstance = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+          labels: ['Principal', 'Interest'],
+          datasets: [{
+            data: [loanAmount, totalInterestAmount],
+            backgroundColor: ['#2A6BFF', '#FF6B6B'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.label + ': ' + formatCurrency(context.raw);
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      // Line Chart
+      const yearlyData = generateYearlyData();
+      const lineCtx = document.getElementById('lineChart').getContext('2d');
+      lineChartInstance = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+          labels: yearlyData.map(item => 'Year ' + item.year),
+          datasets: [
+            {
+              label: 'Principal Paid',
+              data: yearlyData.map(item => item.principalPaid),
+              borderColor: '#2A6BFF',
+              backgroundColor: 'rgba(42, 107, 255, 0.1)',
+              tension: 0.1
+            },
+            {
+              label: 'Interest Paid',
+              data: yearlyData.map(item => item.interestPaid),
+              borderColor: '#FF6B6B',
+              backgroundColor: 'rgba(255, 107, 107, 0.1)',
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + formatCurrency(context.raw);
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '₹' + value/100000 + 'L';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Calculate EMI
+    function calculateEMI() {
+      const principal = loanAmount;
+      const rate = interestRate / 12 / 100; // Monthly interest rate
+      const time = loanTenure * 12; // Total months
+      
+      monthlyEMI = principal * rate * Math.pow(1 + rate, time) / (Math.pow(1 + rate, time) - 1);
+      totalAmount = monthlyEMI * time;
+      totalInterestAmount = totalAmount - principal;
+      
+      updateUI();
+      updateCharts();
+    }
+
+    // Generate yearly data for charts
+    function generateYearlyData() {
+      const monthlyRate = interestRate / 12 / 100;
+      const months = loanTenure * 12;
+      let remainingPrincipal = loanAmount;
+      const yearlyData = [];
+      let yearlyPrincipal = 0;
+      let yearlyInterest = 0;
+      let currentYear = 1;
+      
+      for (let i = 1; i <= months; i++) {
+        const interestForMonth = remainingPrincipal * monthlyRate;
+        const principalForMonth = monthlyEMI - interestForMonth;
+        
+        yearlyPrincipal += principalForMonth;
+        yearlyInterest += interestForMonth;
+        
+        remainingPrincipal -= principalForMonth;
+        
+        if (i % 12 === 0 || i === months) {
+          yearlyData.push({
+            year: currentYear,
+            principalPaid: yearlyPrincipal,
+            interestPaid: yearlyInterest,
+            totalPaid: yearlyPrincipal + yearlyInterest,
+            remainingPrincipal: remainingPrincipal
+          });
+          
+          currentYear++;
+          yearlyPrincipal = 0;
+          yearlyInterest = 0;
+        }
+      }
+      
+      return yearlyData;
+    }
+
+    // Update UI with calculated values
+    function updateUI() {
+      emiValue.textContent = formatCurrency(isMonthlyView ? monthlyEMI : monthlyEMI * 12);
+      emiPeriod.textContent = isMonthlyView ? 'per month' : 'per year';
+      totalPayment.textContent = formatCurrency(totalAmount);
+      totalInterest.textContent = formatCurrency(totalInterestAmount);
+    }
+
+    // Update charts with new data
+    function updateCharts() {
+      if (pieChartInstance) {
+        pieChartInstance.data.datasets[0].data = [loanAmount, totalInterestAmount];
+        pieChartInstance.update();
+      }
+      
+      if (lineChartInstance) {
+        const yearlyData = generateYearlyData();
+        lineChartInstance.data.labels = yearlyData.map(item => 'Year ' + item.year);
+        lineChartInstance.data.datasets[0].data = yearlyData.map(item => item.principalPaid);
+        lineChartInstance.data.datasets[1].data = yearlyData.map(item => item.interestPaid);
+        lineChartInstance.update();
+      }
+    }
+
+    // Format currency values
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+
+    // Event listeners
+    loanAmountInput.addEventListener('input', function() {
+      loanAmount = Number(this.value);
+      loanAmountSlider.value = loanAmount;
+      calculateEMI();
+    });
+
+    loanAmountSlider.addEventListener('input', function() {
+      loanAmount = Number(this.value);
+      loanAmountInput.value = loanAmount;
+      calculateEMI();
+    });
+
+    interestRateInput.addEventListener('input', function() {
+      interestRate = Number(this.value);
+      interestRateSlider.value = interestRate;
+      calculateEMI();
+    });
+
+    interestRateSlider.addEventListener('input', function() {
+      interestRate = Number(this.value);
+      interestRateInput.value = interestRate;
+      calculateEMI();
+    });
+
+    loanTenureInput.addEventListener('input', function() {
+      loanTenure = Number(this.value);
+      loanTenureSlider.value = loanTenure;
+      calculateEMI();
+    });
+
+    loanTenureSlider.addEventListener('input', function() {
+      loanTenure = Number(this.value);
+      loanTenureInput.value = loanTenure;
+      calculateEMI();
+    });
+
+    monthlyBtn.addEventListener('click', function() {
+      if (!isMonthlyView) {
+        isMonthlyView = true;
+        monthlyBtn.classList.add('active');
+        yearlyBtn.classList.remove('active');
+        updateUI();
+      }
+    });
+
+    yearlyBtn.addEventListener('click', function() {
+      if (isMonthlyView) {
+        isMonthlyView = false;
+        yearlyBtn.classList.add('active');
+        monthlyBtn.classList.remove('active');
+        updateUI();
+      }
+    });
+
+    resetBtn.addEventListener('click', function() {
+      loanAmount = 1000000;
+      interestRate = 8;
+      loanTenure = 10;
+      
+      loanAmountInput.value = loanAmount;
+      loanAmountSlider.value = loanAmount;
+      interestRateInput.value = interestRate;
+      interestRateSlider.value = interestRate;
+      loanTenureInput.value = loanTenure;
+      loanTenureSlider.value = loanTenure;
+      
+      calculateEMI();
+    });
+
+    downloadBtn.addEventListener('click', function() {
+      alert('Download functionality would be implemented here');
+    });
+
+    shareBtn.addEventListener('click', function() {
+      alert('Share functionality would be implemented here');
+    });
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', function() {
+      calculateEMI();
+      initCharts();
+    });
+  </script>
+</body>
+</html>
